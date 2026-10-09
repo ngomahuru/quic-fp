@@ -1,0 +1,11 @@
+analysis/venv/
+venv/
+aioquic-fork/
+keys/
+capture/
+data/
+rebuild/
+output/
+features/dataset.csv
+**/__pycache__/
+*.pyc

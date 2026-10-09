@@ -1,0 +1,30 @@
+services:
+  quic-server:
+    build: { context: ., dockerfile: server/Dockerfile }
+    container_name: quic-server
+    restart: unless-stopped
+    environment:
+      PAD_STRATEGY: ${PAD_STRATEGY:-}
+      PAD_TARGET: ${PAD_TARGET:-1000}
+    networks:
+      br-quic: { ipv4_address: 172.16.0.2 }
+
+  quic-client:
+    build: { context: ., dockerfile: client/Dockerfile }
+    container_name: quic-client
+    restart: unless-stopped
+    environment:
+      PAD_STRATEGY: ${PAD_STRATEGY:-}
+      PAD_TARGET: ${PAD_TARGET:-1000}
+      SSLKEYLOGFILE: /keys/secrets.log
+    volumes:
+      - ./keys:/keys
+    networks:
+      br-quic: { ipv4_address: 172.16.0.3 }
+
+networks:
+  br-quic:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24
