@@ -1,0 +1,94 @@
+From a4a9143a8f8acec614ee3a0771f24c51205859dd Mon Sep 17 00:00:00 2001
+From: London <london@londonubuntu.local>
+Date: Fri, 9 Oct 2026 17:14:58 +0300
+Subject: [PATCH] ADD CONFIGURABLE PADDING STRATEGIES: FIXED, RANDOM, MTU
+
+---
+ src/aioquic/quic/configuration.py  |  2 ++
+ src/aioquic/quic/connection.py     |  2 ++
+ src/aioquic/quic/packet_builder.py | 24 ++++++++++++++++++++++++
+ 3 files changed, 28 insertions(+)
+
+diff --git a/src/aioquic/quic/configuration.py b/src/aioquic/quic/configuration.py
+index 7854734..99b39a2 100644
+--- a/src/aioquic/quic/configuration.py
++++ b/src/aioquic/quic/configuration.py
+@@ -119,6 +119,8 @@ class QuicConfiguration:
+         ]
+     )
+     verify_mode: Optional[int] = None
++    padding_strategy: Optional[str] = None
++    padding_target: int = 1000
+ 
+     def load_cert_chain(
+         self,
+diff --git a/src/aioquic/quic/connection.py b/src/aioquic/quic/connection.py
+index e3d7b48..7593a59 100644
+--- a/src/aioquic/quic/connection.py
++++ b/src/aioquic/quic/connection.py
+@@ -546,6 +546,8 @@ class QuicConnection:
+             quic_logger=self._quic_logger,
+             spin_bit=self._spin_bit,
+             version=self._version,
++            padding_strategy=self._configuration.padding_strategy,
++            padding_target=self._configuration.padding_target,
+         )
+         if self._close_pending:
+             epoch_packet_types = []
+diff --git a/src/aioquic/quic/packet_builder.py b/src/aioquic/quic/packet_builder.py
+index cc52c71..6aa7760 100644
+--- a/src/aioquic/quic/packet_builder.py
++++ b/src/aioquic/quic/packet_builder.py
+@@ -1,4 +1,5 @@
+ from dataclasses import dataclass, field
++import random
+ from enum import Enum
+ from typing import Any, Callable, Optional, Sequence
+ 
+@@ -66,6 +67,8 @@ class QuicPacketBuilder:
+         peer_token: bytes = b"",
+         quic_logger: Optional[QuicLoggerTrace] = None,
+         spin_bit: bool = False,
++        padding_strategy: Optional[str] = None,
++        padding_target: int = 0,
+     ):
+         self.max_flight_bytes: Optional[int] = None
+         self.max_total_bytes: Optional[int] = None
+@@ -78,6 +81,8 @@ class QuicPacketBuilder:
+         self._quic_logger = quic_logger
+         self._spin_bit = spin_bit
+         self._version = version
++        self._padding_strategy = padding_strategy
++        self._padding_target = padding_target
+ 
+         # assembled datagrams and packets
+         self._datagrams: list[bytes] = []
+@@ -290,6 +295,25 @@ class QuicPacketBuilder:
+                     padding_size = self.remaining_flight_space
+                 self._datagram_needs_padding = False
+ 
++            # Apply the chosen padding strategy only to application packets.
++            if (
++                self._padding_strategy
++                and self._packet_type == QuicPacketType.ONE_RTT
++                and self._packet.is_ack_eliciting
++            ):
++                room = self.remaining_flight_space
++                if self._padding_strategy == "mtu":
++                    want = room
++                elif self._padding_strategy == "fixed":
++                    want = self._padding_target - packet_size
++                elif self._padding_strategy == "random":
++                    want = random.randint(0, room)
++                else:
++                    want = 0
++                want = max(0, min(want, room))
++                if want > padding_size:
++                    padding_size = want
++
+             # write padding
+             if padding_size > 0:
+                 buf.push_bytes(bytes(padding_size))
+-- 
+2.43.0
+
