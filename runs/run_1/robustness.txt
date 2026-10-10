@@ -1,0 +1,15 @@
+=== RF 200 leaf2, 10 seeds ===
+  mean F1    none=0.947   fixed=0.740   random=0.434   mtu=0.226
+  reduction  mtu=+0.722   random=+0.513   fixed=+0.207
+  order ['mtu', 'random', 'fixed']  all_positive=True
+=== RF 100 leaf1, 30 seeds ===
+  mean F1    none=0.948   fixed=0.719   random=0.432   mtu=0.214
+  reduction  mtu=+0.734   random=+0.516   fixed=+0.228
+  order ['mtu', 'random', 'fixed']  all_positive=True
+=== HistGB, 30 seeds ===
+  mean F1    none=0.951   fixed=0.707   random=0.428   mtu=0.226
+  reduction  mtu=+0.725   random=+0.522   fixed=+0.243
+  order ['mtu', 'random', 'fixed']  all_positive=True
+
+wrote output/robustness.csv
+ROBUSTNESS OK: every strategy lowers accuracy under every variation

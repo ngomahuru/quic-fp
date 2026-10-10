@@ -1,0 +1,12 @@
+run=1
+started=2026-10-09T20:50:34+03:00
+host=Linux 7.0.0-38-generic x86_64
+project_commit=ff39a44
+aioquic_upstream=6d36838d008c2202c337142fa07e8bf80e96bac8
+aioquic_padding=a4a9143a8f8acec614ee3a0771f24c51205859dd
+base_image=python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+flows_per_class=150
+n_req=80
+finished=2026-10-09T22:24:43+03:00
+elapsed_minutes=94
+flows_captured=3000
