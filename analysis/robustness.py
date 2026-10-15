@@ -1,3 +1,5 @@
+# Version 1.1 prints weighted F1 in place of accuracy and F1. The calculation,
+# the printed layout and output/robustness.csv are unchanged from v1.0.
 import sys
 
 import numpy as np
@@ -45,8 +47,8 @@ for name, seeds, make in variations:
     order = sorted(red, key=red.get, reverse=True)
     signs_ok = all(v > 0 for v in red.values())
     print(f"=== {name} ===")
-    print("  mean F1    " + "   ".join(f"{c}={f1[c]:.3f}" for c in conds))
-    print("  reduction  " + "   ".join(f"{c}={red[c]:+.3f}" for c in order))
+    print("  mean weighted F1     " + "   ".join(f"{c}={f1[c]:.3f}" for c in conds))
+    print("  drop in weighted F1  " + "   ".join(f"{c}={red[c]:+.3f}" for c in order))
     print(f"  order {order}  all_positive={signs_ok}")
     if not signs_ok:
         failed.append(name)
@@ -56,6 +58,6 @@ for name, seeds, make in variations:
 pd.DataFrame(rows).to_csv("output/robustness.csv", index=False)
 print("\nwrote output/robustness.csv")
 if failed:
-    print(f"ROBUSTNESS FAIL: a strategy did not lower accuracy under {failed}")
+    print(f"ROBUSTNESS FAIL: a strategy did not lower weighted F1 under {failed}")
     sys.exit(1)
-print("ROBUSTNESS OK: every strategy lowers accuracy under every variation")
+print("ROBUSTNESS OK: every strategy lowers weighted F1 under every variation")
